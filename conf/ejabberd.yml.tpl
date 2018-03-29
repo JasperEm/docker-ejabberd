@@ -382,6 +382,30 @@ modules:
     access: register
   mod_roster: {}
   mod_shared_roster: {}
+  {%- if 'ldap' in env.get('EJABBERD_AUTH_METHOD', 'internal').split() %}
+  mod_shared_roster_ldap:
+        ldap_encrypt: {{ env.get('EJABBERD_LDAP_ENCRYPT', 'none') }}
+        ldap_tls_verify: {{ env.get('EJABBERD_LDAP_TLS_VERIFY', 'false') }}
+        {%- if env['EJABBERD_LDAP_TLS_CACERTFILE'] %}
+        ldap_tls_cacertfile: "{{ env['EJABBERD_LDAP_TLS_CACERTFILE'] }}"
+        {%- endif %}
+        ldap_tls_depth: {{ env.get('EJABBERD_LDAP_TLS_DEPTH', 1) }}
+        {%- if env['EJABBERD_LDAP_PORT'] %}
+        ldap_port: {{ env['EJABBERD_LDAP_PORT'] }}
+        {%- endif %}
+        {%- if env['EJABBERD_LDAP_ROOTDN'] %}
+        ldap_rootdn: "{{ env['EJABBERD_LDAP_ROOTDN'] }}"
+        {%- endif %}
+        {%- if env['EJABBERD_LDAP_PASSWORD'] %}
+        ldap_password: "{{ env['EJABBERD_LDAP_PASSWORD'] }}"
+        {%- endif %}
+        ldap_base: "{{ env['EJABBERD_LDAP_BASE'] }}"        
+        ldap_rfilter: "{{ env['EJABBERD_LDAP_FILTER']}}"
+        ldap_filter: "(objectClass=*)"
+        ldap_memberattr: "uid"
+        #ldap_ufilter: "(uid=%u)"
+        ldap_userdesc: "jabber"
+  {% endif %}
   mod_stats: {}
   mod_time: {}
   mod_vcard: {}
@@ -427,9 +451,9 @@ default_db: {{ env['EJABBERD_DEFAULT_DB'] }}
 ###   SESSION MANAGEMENT DB
 sm_db_type: {{ env['EJABBERD_SESSION_DB'] or "mnesia" }}
 
-{%- if env['EJABBERD_CONFIGURE_REDIS'] == "true" %}
 ###   ====================
 ###   REDIS DATABASE CONFIG
+{%- if env['EJABBERD_REDIS_SERVER'] is defined %}
 redis_server: {{ env['EJABBERD_REDIS_SERVER'] or "localhost" }}
 redis_port: {{ env['EJABBERD_REDIS_PORT'] or 6379 }}
 {%- if env['EJABBERD_REDIS_PASSWORD'] is defined %}

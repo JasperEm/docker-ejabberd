@@ -25,6 +25,7 @@ log_rate_limit: 100
 
 hosts:
 {%- for xmpp_domain in env['XMPP_DOMAIN'].split() %}
+
   - "{{ xmpp_domain }}"
 {%- endfor %}
 
@@ -284,6 +285,20 @@ access:
     all: 400 # MiB
   hard_upload_quota:
     all: 500 # MiB
+  acme:
+
+   ## A contact mail that the ACME Certificate Authority can contact in case of
+   ## an authorization issue, such as a server-initiated certificate revocation.
+   ## It is not mandatory to provide an email address but it is highly suggested.
+   contact: "mailto:{{env['EJABBERD_ADMINS'].split()[0]}}"
+
+
+   ## The ACME Certificate Authority URL.
+   ## This could either be:
+   ##   - https://acme-v01.api.letsencrypt.org - (Default) for the production CA
+   ##   - https://acme-staging.api.letsencrypt.org - for the staging CA
+   ##   - http://localhost:4000 - for a local version of the CA
+   ca_url: "https://acme-v01.api.letsencrypt.org"
 
 
 language: "en"

@@ -1,0 +1,48 @@
+version: '3.4'
+services:
+  ejabberd:
+    image: jasperem/ejabberd
+    tty: true
+    ports:
+      - 5222:5222
+      - 5269:5269
+      - 5280:5280
+    volumes:
+      - ssl:/opt/ejabberd/ssl/
+      - database:/opt/ejabberd/database/
+      - upload:/opt/ejabberd/upload/
+      - backup:/opt/ejabberd/backup/
+    environment:
+      XMPP_DOMAIN: "example.org"
+      EJABBERD_ADMINS: "admin@example.org"
+      LDAP_EJABBERD_GROUP_MEMBERS: ""
+      EJABBERD_MOD_ADMIN_EXTRA: "true"
+      EJABBERD_MOD_MUC_ADMIN: "true"
+      EJABBERD_AUTH_METHOD: "ldap"
+      EJABBERD_LDAP_SERVERS: "cube"
+      EJABBERD_LDAP_ROOTDN: "cn=admin,dc=example,dc=org"
+      EJABBERD_LDAP_PASSWORD: "admin"
+      EJABBERD_LDAP_BASE: "dc=example,dc=org"
+      EJABBERD_LDAP_UIDS: "uid:%u"
+      EJABBERD_LDAP_FILTER: "(&(objectClass=inetOrgPerson)(gidNumber=500))"
+volumes:
+    ssl:
+      driver_opts:
+        type: none
+        device: /home/../ejabberd/ssl/
+        o: uid=999,gid=999,bind
+    database:
+      driver_opts:
+        type: none
+        device: /home/../ejabberd/database/
+        o: uid=999,gid=999,bind
+    upload:
+      driver_opts:
+        type: none
+        device: /home/../ejabberd/upload/
+        o: uid=999,gid=999,bind
+    backup:
+      driver_opts:
+        type: none
+        device: /home/../ejabberd/backup/
+        o: uid=999,gid=999,bind

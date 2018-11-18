@@ -25,6 +25,7 @@ log_rate_limit: 100
 
 hosts:
 {%- for xmpp_domain in env['XMPP_DOMAIN'].split() %}
+
   - "{{ xmpp_domain }}"
 {%- endfor %}
 
@@ -304,6 +305,20 @@ access:
     all: {{ env.get('EJABBERD_SOFT_UPLOAD_QUOTA', 400) }} # MiB
   hard_upload_quota:
     all: {{ env.get('EJABBERD_HARD_UPLOAD_QUOTA', 500) }} # MiB
+  acme:
+
+   ## A contact mail that the ACME Certificate Authority can contact in case of
+   ## an authorization issue, such as a server-initiated certificate revocation.
+   ## It is not mandatory to provide an email address but it is highly suggested.
+   contact: "mailto:{{env['EJABBERD_ADMINS'].split()[0]}}"
+
+
+   ## The ACME Certificate Authority URL.
+   ## This could either be:
+   ##   - https://acme-v01.api.letsencrypt.org - (Default) for the production CA
+   ##   - https://acme-staging.api.letsencrypt.org - for the staging CA
+   ##   - http://localhost:4000 - for a local version of the CA
+   ca_url: "https://acme-v01.api.letsencrypt.org"
 
 
 language: "en"
@@ -420,6 +435,30 @@ modules:
     versioning: true
   mod_s2s_dialback: {}
   mod_shared_roster: {}
+  {%- if 'ldap' in env.get('EJABBERD_AUTH_METHOD', 'internal').split() %}
+  mod_shared_roster_ldap:
+        ldap_encrypt: {{ env.get('EJABBERD_LDAP_ENCRYPT', 'none') }}
+        ldap_tls_verify: {{ env.get('EJABBERD_LDAP_TLS_VERIFY', 'false') }}
+        {%- if env['EJABBERD_LDAP_TLS_CACERTFILE'] %}
+        ldap_tls_cacertfile: "{{ env['EJABBERD_LDAP_TLS_CACERTFILE'] }}"
+        {%- endif %}
+        ldap_tls_depth: {{ env.get('EJABBERD_LDAP_TLS_DEPTH', 1) }}
+        {%- if env['EJABBERD_LDAP_PORT'] %}
+        ldap_port: {{ env['EJABBERD_LDAP_PORT'] }}
+        {%- endif %}
+        {%- if env['EJABBERD_LDAP_ROOTDN'] %}
+        ldap_rootdn: "{{ env['EJABBERD_LDAP_ROOTDN'] }}"
+        {%- endif %}
+        {%- if env['EJABBERD_LDAP_PASSWORD'] %}
+        ldap_password: "{{ env['EJABBERD_LDAP_PASSWORD'] }}"
+        {%- endif %}
+        ldap_base: "{{ env['EJABBERD_LDAP_BASE'] }}"        
+        ldap_rfilter: "{{ env['EJABBERD_LDAP_FILTER']}}"
+        ldap_filter: "(objectClass=*)"
+        ldap_memberattr: "uid"
+        #ldap_ufilter: "(uid=%u)"
+        ldap_userdesc: "jabber"
+  {% endif %}
   mod_stats: {}
   mod_stream_mgmt:
     resend_on_timeout: if_offline
@@ -455,9 +494,9 @@ default_db: {{ env['EJABBERD_DEFAULT_DB'] }}
 ###   SESSION MANAGEMENT DB
 sm_db_type: {{ env['EJABBERD_SESSION_DB'] or "mnesia" }}
 
-{%- if env['EJABBERD_CONFIGURE_REDIS'] == "true" %}
 ###   ====================
 ###   REDIS DATABASE CONFIG
+{%- if env['EJABBERD_REDIS_SERVER'] is defined %}
 redis_server: {{ env['EJABBERD_REDIS_SERVER'] or "localhost" }}
 redis_port: {{ env['EJABBERD_REDIS_PORT'] or 6379 }}
 {%- if env['EJABBERD_REDIS_PASSWORD'] is defined %}

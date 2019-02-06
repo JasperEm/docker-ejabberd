@@ -81,7 +81,6 @@ listen:
     ##  "/pub/archive": mod_http_fileserver
     web_admin: true
     http_bind: true
-    http_poll: true
     ## register: true
     {%- if env.get('EJABBERD_CAPTCHA', false) == "true" %}
     captcha: true
@@ -328,7 +327,7 @@ language: "en"
 
 modules:
   mod_adhoc: {}
-  {%- if env['EJABBERD_MOD_ADMIN_EXTRA'] == "true" %}
+  {% if env.get('EJABBERD_MOD_ADMIN_EXTRA', "true") == "true" %}
   mod_admin_extra: {}
   {% endif %}
   mod_announce: # recommends mod_adhoc
@@ -343,7 +342,6 @@ modules:
   mod_configure: {} # requires mod_adhoc
   mod_disco: {}
   ## mod_echo: {}
-  mod_irc: {}
   ## mod_http_fileserver:
   ##   docroot: "/var/www"
   ##   accesslog: "/var/log/ejabberd/access.log"
@@ -389,6 +387,9 @@ modules:
     port: 5277
   mod_pubsub:
     access_createnode: pubsub_createnode
+    force_node_config:
+      "eu.siacs.conversations.axolotl.*":
+        access_model: open
     ## reduces resource comsumption, but XEP incompliant
     ignore_pep_from_offline: true
     ## XEP compliant, but increases resource comsumption
@@ -464,7 +465,7 @@ modules:
     resend_on_timeout: if_offline
   mod_time: {}
   mod_vcard: {}
-  {% if env.get('EJABBERD_MOD_VERSION', true) == "true" %}
+  {% if env.get('EJABBERD_MOD_VERSION', "true") == "true" %}
   mod_version: {}
   {% endif %}
 
